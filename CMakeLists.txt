@@ -15,6 +15,10 @@ endif()
 
 project("minizip")
 
+if( EXISTS "${CMAKE_CURRENT_LIST_DIR}/bpc-package/BpcPackage.cmake" )
+  include( "bpc-package/BpcPackage.cmake" )
+endif()
+
 # set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
 
@@ -87,31 +91,38 @@ if(USE_AES)
   add_library(aes ${AES_SRC} ${AES_PUBLIC_HEADERS})
 
   add_definitions(-DHAVE_AES)
-
   target_link_libraries(minizip aes)
 
-  install(TARGETS aes EXPORT minizip-exports
-    INCLUDES DESTINATION "include"
-    RUNTIME DESTINATION  "bin"
-    LIBRARY DESTINATION  "lib"
-    ARCHIVE DESTINATION  "lib")
+  if( NOT BPC_PACKAGE_FOUND )
+	  install(TARGETS aes EXPORT minizip-exports
+	    INCLUDES DESTINATION "include"
+	    RUNTIME DESTINATION  "bin"
+	    LIBRARY DESTINATION  "lib"
+	    ARCHIVE DESTINATION  "lib")
 
-  install(FILES ${AES_PUBLIC_HEADERS}
-    DESTINATION "include/minizip/aes")
+	  install(FILES ${AES_PUBLIC_HEADERS}
+	    DESTINATION "include/minizip/aes")
+  endif()
 endif()
 
-install(TARGETS minizip EXPORT minizip-exports
-  INCLUDES DESTINATION "include"
-  RUNTIME DESTINATION "bin"
-  LIBRARY DESTINATION "lib"
-  ARCHIVE DESTINATION "lib")
+if( BPC_PACKAGE_FOUND )
+	set_target_properties(minizip PROPERTIES PUBLIC_HEADER "${MINIZIP_PUBLIC_HEADERS}")
+	set_target_properties(aes PROPERTIES PUBLIC_HEADER "${AES_PUBLIC_HEADERS}")
+	BpcInstallPackage( NAME MINIZIP NAMESPACE MINIZIP:: VERSION ${VERSION} TARGETS minizip aes )
+else()	
+	install(TARGETS minizip EXPORT minizip-exports
+	  INCLUDES DESTINATION "include"
+	  RUNTIME DESTINATION "bin"
+	  LIBRARY DESTINATION "lib"
+	  ARCHIVE DESTINATION "lib")
 
-install(EXPORT minizip-exports
-        DESTINATION "cmake"
-        NAMESPACE "MINIZIP::")
+	install(EXPORT minizip-exports
+			DESTINATION "cmake"
+			NAMESPACE "MINIZIP::")
 
-install(FILES ${MINIZIP_PUBLIC_HEADERS}
-  DESTINATION "include/minizip")
+	install(FILES ${MINIZIP_PUBLIC_HEADERS}
+	  DESTINATION "include/minizip")
+endif()
 
 option (BUILD_TEST "enabled building of executables minizip and miniunz. Requires ZLIB!" OFF)
 if(BUILD_TEST)
