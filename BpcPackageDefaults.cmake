@@ -9,6 +9,6 @@ set( VERSION "1.0.0" )
 else()
 
 # Platforms for which to build
-set( BPC_PACKAGE_PLATFORMS "MSVC-32-14.0;MSVC-64-14.0;NISOM;nisom-cxx11" )
+set( BPC_PACKAGE_PLATFORMS "MSVC-32-14.0;MSVC-64-14.0;NISOM;nisom-cxx11;GNU-64-Linux-4.7.4" )
 
 endif()
