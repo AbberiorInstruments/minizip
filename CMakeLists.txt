@@ -17,14 +17,17 @@ project("minizip")
 
 if( EXISTS "${CMAKE_CURRENT_LIST_DIR}/bpc-package/BpcPackage.cmake" )
   include( "bpc-package/BpcPackage.cmake" )
+  find_package( Zlib 1.2.8 REQUIRED zlib )
+else()
+  # Ensure correct version of zlib is referenced
+  set(ZLIB_ROOT ${DEF_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
+  find_package(ZLIB REQUIRED)
 endif()
+
 
 # set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
 
-# Ensure correct version of zlib is referenced
-set(ZLIB_ROOT ${DEF_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
-find_package(ZLIB REQUIRED)
 if(ZLIB_FOUND)
     include_directories(${ZLIB_INCLUDE_DIRS})
 endif()
@@ -59,7 +62,11 @@ endif()
 
 # create minizip library
 add_library(minizip ${MINIZIP_SRC} ${MINIZIP_PUBLIC_HEADERS})
-target_link_libraries(minizip ZLIB::ZLIB)
+if( NOT BPC_PACKAGE_FOUND )
+  target_link_libraries(minizip ZLIB::ZLIB)
+else()
+  target_link_libraries(minizip Zlib::zlib)
+endif()
 
 option(USE_AES "enables building of aes library" ON)
 if(USE_AES)
